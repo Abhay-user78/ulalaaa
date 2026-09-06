@@ -1,0 +1,43 @@
+{
+  "anomaly_auc": 0.925555424095301,
+  "anomaly_pr_auc": 0.9442308822884732,
+  "binary_f1": 0.8800744096732576,
+  "fault_f1_macro": 0.7488362930097678,
+  "health_mae": 59.977542877197266,
+  "healthy_fpr": 0.13190237147308292,
+  "healthy_fpr_alert": 0.06127747966072356,
+  "overheating_f1": 0.7660116448326055,
+  "overheating_precision": 0.8031285768790538,
+  "overheating_recall": 0.7321739130434782,
+  "per_fault_f1": {
+    "bearing_fault": 0.3288040151793365,
+    "electrical_fault": 0.9732083054253181,
+    "injector_degradation": 0.7140207715133531,
+    "lubrication_issue": 0.9750680913471611,
+    "misfire": 0.930784442979565,
+    "overheating": 0.7660116448326055,
+    "sensor_drift": 0.580359612724758,
+    "turbo_issue": 0.7224334600760456
+  },
+  "per_fault_precision": {
+    "bearing_fault": 0.24089686098654708,
+    "electrical_fault": 1.0,
+    "injector_degradation": 0.8761948111060537,
+    "lubrication_issue": 0.9671654197838736,
+    "misfire": 0.9489247311827957,
+    "overheating": 0.8031285768790538,
+    "sensor_drift": 0.7911010558069381,
+    "turbo_issue": 0.7973621103117506
+  },
+  "per_fault_recall": {
+    "bearing_fault": 0.5177332305319969,
+    "electrical_fault": 0.9478147423352903,
+    "injector_degradation": 0.6025039123630673,
+    "lubrication_issue": 0.9831009716941276,
+    "misfire": 0.9133247089262613,
+    "overheating": 0.7321739130434782,
+    "sensor_drift": 0.4582787243337702,
+    "turbo_issue": 0.660377358490566
+  },
+  "rul_mae": 80.14744567871094
+}

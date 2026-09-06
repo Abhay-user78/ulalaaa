@@ -1,0 +1,62 @@
+{
+  "tuned_thresholds": {
+    "bearing_fault": 0.25,
+    "electrical_fault": 0.68,
+    "injector_degradation": 0.36,
+    "lubrication_issue": 0.4,
+    "misfire": 0.4,
+    "overheating": 0.3,
+    "sensor_drift": 0.36,
+    "turbo_issue": 0.4
+  },
+  "verified_on_test": {
+    "bearing_fault": {
+      "f1": 0.3375614807144706,
+      "precision": 0.2540919719407638,
+      "recall": 0.5026985350809561,
+      "threshold": 0.25
+    },
+    "electrical_fault": {
+      "f1": 0.9732083054253181,
+      "precision": 1.0,
+      "recall": 0.9478147423352903,
+      "threshold": 0.68
+    },
+    "injector_degradation": {
+      "f1": 0.7140207715133531,
+      "precision": 0.8761948111060537,
+      "recall": 0.6025039123630673,
+      "threshold": 0.36
+    },
+    "lubrication_issue": {
+      "f1": 0.9816416965604557,
+      "precision": 0.9806070826306914,
+      "recall": 0.9826784959864808,
+      "threshold": 0.4
+    },
+    "misfire": {
+      "f1": 0.930784442979565,
+      "precision": 0.9489247311827957,
+      "recall": 0.9133247089262613,
+      "threshold": 0.4
+    },
+    "overheating": {
+      "f1": 0.7631284916201118,
+      "precision": 0.8212424849699399,
+      "recall": 0.7126956521739131,
+      "threshold": 0.3
+    },
+    "sensor_drift": {
+      "f1": 0.580359612724758,
+      "precision": 0.7911010558069381,
+      "recall": 0.4582787243337702,
+      "threshold": 0.36
+    },
+    "turbo_issue": {
+      "f1": 0.7356064840693125,
+      "precision": 0.8414322250639387,
+      "recall": 0.6534260178748759,
+      "threshold": 0.4
+    }
+  }
+}

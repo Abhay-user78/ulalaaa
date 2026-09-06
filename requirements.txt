@@ -1,0 +1,14 @@
+#python 3.13.0
+numpy
+pandas
+scikit-learn
+torch
+scipy
+pyttsx3==2.90
+reportlab==4.0.7
+# Chatbot MVP is rule-based; heavy deps below are optional for LLM upgrade
+# langchain==0.1.0
+# transformers==4.35.0
+# sentence-transformers==2.2.2
+# faiss-cpu==1.7.4
+pytest

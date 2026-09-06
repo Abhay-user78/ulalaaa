@@ -1,0 +1,26 @@
+﻿# Shareable repo — ignore large/generated, keep sample_data
+.venv/
+__pycache__/
+apet_guardian/__pycache__/
+nlp/__pycache__/
+tests/__pycache__/
+dashboard/__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+*.log
+*.tmp
+
+# Large data — use sample_data for sharing (10 files), generate full DATA via generator if needed
+DATA/
+APET_GUARDIAN_OUT/*
+!APET_GUARDIAN_OUT/artifacts/
+!APET_GUARDIAN_OUT/artifacts/*
+!APET_GUARDIAN_OUT/artifacts/*.pkl
+!APET_GUARDIAN_OUT/*.json
+
+# Local env
+.env
+inp_backup.csv
+.DS_Store
+Thumbs.db

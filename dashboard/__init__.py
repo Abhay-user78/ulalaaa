@@ -1,0 +1,2 @@
+# Package init
+"""Dashboard package."""
