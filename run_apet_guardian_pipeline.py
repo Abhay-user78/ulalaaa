@@ -45,12 +45,12 @@ WINDOW_STRIDE = 10
 MAX_GAP = 1.5
 
 REQUIRED_SENSORS = [
-    "throttle_actual", "true_rpm", "air_density_kg_m3", "altitude_m",
+    "throttle_actual", "air_density_kg_m3", "altitude_m",
     "rpm", "boost_pressure_kPa", "manifold_pressure_kPa", "cht_cyl_avg_C",
     "egt_cyl_avg_C", "oil_pressure_kPa", "oil_temp_C", "coolant_temp_C",
     "fuel_flow_g_s", "fuel_temp_C", "rail_pressure_bar", "vib_rms_g",
     "battery_voltage_V", "airspeed_mps", "vertical_speed_mps",
-    "engine_power_command_kW", "true_brake_power_kW",
+    "engine_power_command_kW",
 ]
 ALIASES = OrderedDict([
     ("engine_id", ["engine_id", "engine", "engineid"]),
@@ -247,6 +247,12 @@ def read_and_validate_input(path):
 def preprocess(df):
     df = df.sort_values(["engine_id", "mission_id", "global_time_s"],
                         kind="mergesort").reset_index(drop=True)
+
+    # Fallbacks for calibration columns (not in clean inp.csv)
+    if "true_rpm" not in df.columns:
+        df["true_rpm"] = df["rpm"] if "rpm" in df.columns else 2800.0
+    if "true_brake_power_kW" not in df.columns:
+        df["true_brake_power_kW"] = df["prop_power_kW"] if "prop_power_kW" in df.columns else 0.0
 
     mission_warnings = {}
     for (eid, mid), g in df.groupby(["engine_id", "mission_id"], sort=False):
