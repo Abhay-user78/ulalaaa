@@ -12,7 +12,9 @@ The system has 6 neural network / ML models plus a physics-based feature engine.
 
 `inp.csv` contains raw sensor readings from the UAV engine. **No ground-truth labels are required** — the pipeline infers everything from telemetry.
 
-### Required Input Columns (81 total)
+**Leakage-free:** All `true_*`, `fault_*`, `sensor_drift_flag_*`, `simulated_rul_hours`, `health_state`, `failure_*`, `severity_*` columns are removed. The model never sees the answers.
+
+### Required Input Columns (76 total)
 
 | # | Column | Unit | Description |
 |---|--------|------|-------------|
