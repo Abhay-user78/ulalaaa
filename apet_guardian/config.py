@@ -47,7 +47,8 @@ SEQ_FEATURES = [
     "rpm", "throttle_actual", "boost_pressure_kPa", "manifold_pressure_kPa",
     "cht_cyl_avg_C", "egt_cyl_avg_C", "oil_pressure_kPa", "oil_temp_C",
     "coolant_temp_C", "fuel_flow_g_s", "fuel_temp_C", "rail_pressure_bar",
-    "vib_rms_g", "battery_voltage_V", "airspeed_mps", "altitude_m",
+    "vib_rms_g", "vib_1x_rms", "vib_2x_rms", "vib_bpfo_hz", "vib_bpfi_hz", "vib_bsf_hz", "vib_psd_peak",
+    "battery_voltage_V", "airspeed_mps", "altitude_m",
     "vertical_speed_mps", "engine_power_command_kW",
     "expected_boost", "boost_residual_kPa", "boost_residual_norm",
     "cht_residual_norm", "egt_residual_norm", "oilp_residual_norm",
@@ -58,7 +59,7 @@ SEQ_FEATURES = [
 STATS_SIGNALS = [
     "rpm", "cht_cyl_avg_C", "egt_cyl_avg_C", "oil_pressure_kPa", "oil_temp_C",
     "coolant_temp_C", "boost_pressure_kPa", "manifold_pressure_kPa",
-    "fuel_flow_g_s", "throttle_actual", "vib_rms_g", "battery_voltage_V",
+    "fuel_flow_g_s", "throttle_actual", "vib_rms_g", "vib_1x_rms", "vib_2x_rms", "vib_bpfo_hz", "vib_bpfi_hz", "vib_bsf_hz", "vib_psd_peak", "battery_voltage_V",
     "airspeed_mps", "altitude_m", "vertical_speed_mps",
     "boost_residual_kPa", "boost_residual_norm", "thermal_stress",
     "fuel_per_rpm_g_rev", "oil_efficiency_KPa_per_C",

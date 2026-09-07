@@ -1,62 +1,62 @@
 {
   "tuned_thresholds": {
-    "bearing_fault": 0.25,
-    "electrical_fault": 0.68,
-    "injector_degradation": 0.36,
-    "lubrication_issue": 0.4,
-    "misfire": 0.4,
-    "overheating": 0.3,
-    "sensor_drift": 0.36,
-    "turbo_issue": 0.4
+    "bearing_fault": 0.81,
+    "electrical_fault": 0.9,
+    "injector_degradation": 0.81,
+    "lubrication_issue": 0.91,
+    "misfire": 0.86,
+    "overheating": 0.92,
+    "sensor_drift": 0.88,
+    "turbo_issue": 0.88
   },
   "verified_on_test": {
     "bearing_fault": {
-      "f1": 0.3375614807144706,
-      "precision": 0.2540919719407638,
-      "recall": 0.5026985350809561,
-      "threshold": 0.25
+      "f1": 0.5981996726677578,
+      "precision": 0.5758172508861756,
+      "recall": 0.6223925074499788,
+      "threshold": 0.81
     },
     "electrical_fault": {
-      "f1": 0.9732083054253181,
+      "f1": 0.9827586206896551,
       "precision": 1.0,
-      "recall": 0.9478147423352903,
-      "threshold": 0.68
+      "recall": 0.9661016949152542,
+      "threshold": 0.9
     },
     "injector_degradation": {
-      "f1": 0.7140207715133531,
-      "precision": 0.8761948111060537,
-      "recall": 0.6025039123630673,
-      "threshold": 0.36
+      "f1": 0.6612336209651646,
+      "precision": 0.654746835443038,
+      "recall": 0.6678502259522272,
+      "threshold": 0.81
     },
     "lubrication_issue": {
-      "f1": 0.9816416965604557,
-      "precision": 0.9806070826306914,
-      "recall": 0.9826784959864808,
-      "threshold": 0.4
+      "f1": 0.9408185840707964,
+      "precision": 0.9244565217391304,
+      "recall": 0.9577702702702703,
+      "threshold": 0.91
     },
     "misfire": {
-      "f1": 0.930784442979565,
-      "precision": 0.9489247311827957,
-      "recall": 0.9133247089262613,
-      "threshold": 0.4
+      "f1": 0.8420781893004116,
+      "precision": 0.9243365330321852,
+      "recall": 0.7732640529050543,
+      "threshold": 0.86
     },
     "overheating": {
-      "f1": 0.7631284916201118,
-      "precision": 0.8212424849699399,
-      "recall": 0.7126956521739131,
-      "threshold": 0.3
+      "f1": 0.724309642372114,
+      "precision": 0.8849557522123894,
+      "recall": 0.6130268199233716,
+      "threshold": 0.92
     },
     "sensor_drift": {
-      "f1": 0.580359612724758,
-      "precision": 0.7911010558069381,
-      "recall": 0.4582787243337702,
-      "threshold": 0.36
+      "f1": 0.5110304384250209,
+      "precision": 0.4964731416169289,
+      "recall": 0.5264672036823935,
+      "threshold": 0.88
     },
     "turbo_issue": {
-      "f1": 0.7356064840693125,
-      "precision": 0.8414322250639387,
-      "recall": 0.6534260178748759,
-      "threshold": 0.4
+      "f1": 0.8252714708785784,
+      "precision": 0.7977099236641222,
+      "recall": 0.8548057259713702,
+      "threshold": 0.88
     }
   }
 }

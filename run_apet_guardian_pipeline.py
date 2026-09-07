@@ -25,14 +25,14 @@ LIVE_STATE_RESET_TILES = 12
 ANOMALY_ALERT_THRESHOLD = 0.5
 MULTILABEL_THRESHOLD = 0.5
 PER_CLASS_THRESHOLD = {
-    "misfire": 0.400,
-    "injector_degradation": 0.360,
-    "turbo_issue": 0.380,
-    "lubrication_issue": 0.360,
-    "sensor_drift": 0.360,
-    "overheating": 0.280,
-    "electrical_fault": 0.680,
-    "bearing_fault": 0.240,
+    "misfire": 0.860,
+    "injector_degradation": 0.810,
+    "turbo_issue": 0.880,
+    "lubrication_issue": 0.910,
+    "sensor_drift": 0.880,
+    "overheating": 0.920,
+    "electrical_fault": 0.900,
+    "bearing_fault": 0.810,
 }
 FAULT_PROB_HIGH = 0.5
 CONSECUTIVE_RISK = 3
@@ -72,6 +72,12 @@ ALIASES = OrderedDict([
     ("fuel_temp_C", ["fuel_temp_C", "fuel_temp"]),
     ("rail_pressure_bar", ["rail_pressure_bar", "rail_pressure"]),
     ("vib_rms_g", ["vib_rms_g", "vibration_rms_g", "vibration", "vib_rms"]),
+    ("vib_1x_rms", ["vib_1x_rms", "vib_1x"]),
+    ("vib_2x_rms", ["vib_2x_rms", "vib_2x"]),
+    ("vib_bpfo_hz", ["vib_bpfo_hz", "bpfo"]),
+    ("vib_bpfi_hz", ["vib_bpfi_hz", "bpfi"]),
+    ("vib_bsf_hz", ["vib_bsf_hz", "bsf"]),
+    ("vib_psd_peak", ["vib_psd_peak", "psd_peak"]),
     ("battery_voltage_V", ["battery_voltage_V", "battery_voltage"]),
     ("airspeed_mps", ["airspeed_mps", "airspeed"]),
     ("vertical_speed_mps", ["vertical_speed_mps", "vertical_speed"]),
@@ -85,7 +91,7 @@ UNIT_BOUNDS = {
     "oil_pressure_kPa": (0.0, 1500.0), "oil_temp_C": (-50.0, 300.0),
     "coolant_temp_C": (-50.0, 300.0), "fuel_flow_g_s": (0.0, 200.0),
     "fuel_temp_C": (-50.0, 300.0), "rail_pressure_bar": (0.0, 500.0),
-    "vib_rms_g": (0.0, 100.0), "battery_voltage_V": (5.0, 60.0),
+    "vib_rms_g": (0.0, 100.0), "vib_1x_rms": (0.0, 100.0), "vib_2x_rms": (0.0, 100.0), "vib_bpfo_hz": (0.0, 500.0), "vib_bpfi_hz": (0.0, 500.0), "vib_bsf_hz": (0.0, 500.0), "vib_psd_peak": (0.0, 10.0), "battery_voltage_V": (5.0, 60.0),
     "airspeed_mps": (0.0, 400.0), "altitude_m": (-500.0, 50000.0),
     "vertical_speed_mps": (-500.0, 500.0),
     "engine_power_command_kW": (0.0, 1500.0),
@@ -211,11 +217,28 @@ def read_and_validate_input(path):
         raise ValueError(
             f"input CSV is missing required columns: {missing}\n"
             f"present columns: {sorted(df.columns.tolist())}")
+    # Keep optional vibe spectral columns if present (for new bearing model, backward compatible)
+    _optional_vibe = ["vib_1x_rms", "vib_2x_rms", "vib_bpfo_hz", "vib_bpfi_hz", "vib_bsf_hz", "vib_psd_peak"]
     keep = required + [c for c in df.columns if c.startswith("fault_")
                        or c in ("fault_active", "simulated_rul_hours",
-                                "true_overall_health_index")]
+                                "true_overall_health_index")
+                       or c in _optional_vibe]
     keep = [c for c in dict.fromkeys(keep) if c in df.columns]
     df = df[keep].copy()
+    # For backward compat: create missing vibe columns with defaults so new 35-feature bundle works on old inp.csv
+    for col in _optional_vibe:
+        if col not in df.columns:
+            if col in ("vib_1x_rms", "vib_2x_rms"):
+                df[col] = (df["vib_rms_g"] * 0.3).fillna(0.0) if "vib_rms_g" in df.columns else 0.0
+            elif col == "vib_psd_peak":
+                df[col] = 0.001
+            else:
+                if "rpm" in df.columns:
+                    df[col] = (df["rpm"] / 60.0 * (3.5 if "bpfo" in col else 4.5 if "bpfi" in col else 2.0)).fillna(0.0)
+                else:
+                    df[col] = 0.0
+        else:
+            df[col] = df[col].fillna(0.0)
     df["engine_id"] = df["engine_id"].astype(str)
     df["mission_id"] = df["mission_id"].astype(str)
     return df
@@ -249,15 +272,20 @@ def preprocess(df):
                 break
         mission_warnings[(str(eid), str(mid))] = warns
 
+    _vibe_cols = [c for c in ["vib_1x_rms", "vib_2x_rms", "vib_bpfo_hz", "vib_bpfi_hz", "vib_bsf_hz", "vib_psd_peak"] if c in df.columns]
+    _impute_cols = REQUIRED_SENSORS + _vibe_cols
     imp_by_mission = {
-        key: int(g[REQUIRED_SENSORS].isna().sum().sum())
+        key: int(g[_impute_cols].isna().sum().sum())
         for key, g in df.groupby(["engine_id", "mission_id"], sort=False)
     }
     if any(v > 0 for v in imp_by_mission.values()):
-        df[REQUIRED_SENSORS] = df[REQUIRED_SENSORS].ffill().bfill()
+        df[_impute_cols] = df[_impute_cols].ffill().bfill()
         for key, imp in imp_by_mission.items():
             if imp:
                 mission_warnings[key].add(f"{imp}_missing_values_imputed")
+    # Ensure vibe cols never have NaN for new bundle (old inp may have created them with 0 but still need fill)
+    for c in _vibe_cols:
+        df[c] = df[c].fillna(0.0)
     return df, mission_warnings
 
 # Class Threshold
