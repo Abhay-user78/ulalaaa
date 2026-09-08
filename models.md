@@ -2,9 +2,9 @@
 
 ## Overview
 
-APET-GUARDIAN is a UAV engine digital twin that detects anomalies, classifies 8 fault types, predicts remaining useful life (RUL), and estimates overall health index. It runs in real-time from raw CSV telemetry.
+APET-GUARDIAN is a UAV engine digital twin that detects anomalies, classifies 8 fault types, predicts remaining useful life (RUL), estimates overall health index, and provides early pre-fault warnings. It runs in real-time from raw CSV telemetry.
 
-The system has 6 neural network / ML models plus a physics-based feature engine. All models are trained offline on synthetic data and bundled into `APET_GUARDIAN_OUT/artifacts/apet_bundle.pkl`.
+The system has 7 neural network / ML models plus a physics-based feature engine. All models are trained offline on synthetic data and bundled into `APET_GUARDIAN_OUT/artifacts/apet_bundle.pkl`.
 
 ---
 
@@ -440,6 +440,74 @@ Input: 240 features
 
 ---
 
+## Model 7: Pre-Fault Early Warning (`training.py` → `fit_preault_gbm`)
+
+**Type:** 8 independent HistGradientBoostingClassifier models (one per fault type)
+
+**Purpose:** Detect that a fault is *about to occur* BEFORE it manifests — true early warning. Each model predicts whether its specific fault type will activate within the next 180 seconds (3 minutes).
+
+**Input:** 240-dim stat features (same as other models)
+
+**Architecture:** 8 independent binary classifiers, one per fault type:
+```
+For each fault type i ∈ {misfire, injector_degradation, ..., bearing_fault}:
+  HistGradientBoostingClassifier(
+      max_iter = 100,
+      learning_rate = 0.15,
+      max_depth = 5,
+      class_weight = "balanced"     ← handles sparse positive labels
+  )
+```
+
+**Parameters:**
+| Parameter | Value |
+|-----------|-------|
+| Algorithm | HistGradientBoostingClassifier (sklearn) |
+| Number of models | 8 (one per fault type) |
+| max_iter | 100 |
+| learning_rate | 0.15 |
+| max_depth | 5 |
+| class_weight | balanced |
+| Training samples | ~113k windows |
+
+**Training labels (look-ahead TTF):**
+For each window, the label for fault type *i* = 1 if that specific fault will first become active within the next 180 seconds (360 rows at 0.5s stride). Labels are computed from `DATA/rul/` lifecycle missions which contain ground-truth fault onset times.
+
+```
+preault_label[window_k, fault_i] = 1  if  fault_i activates within next 180s from window_k
+                                  = 0  otherwise
+```
+
+**Output:** 8 pre-fault probabilities per window (0-1). Any fault exceeding `PREFAULT_THRESHOLD=0.5` triggers a `preault_alert`.
+
+| Output Column | Description |
+|---------------|-------------|
+| `preault_probability_misfire` | Pre-fault probability for misfire |
+| `preault_probability_injector_degradation` | Pre-fault probability for injector degradation |
+| `preault_probability_turbo_issue` | Pre-fault probability for turbo issue |
+| `preault_probability_lubrication_issue` | Pre-fault probability for lubrication issue |
+| `preault_probability_sensor_drift` | Pre-fault probability for sensor drift |
+| `preault_probability_overheating` | Pre-fault probability for overheating |
+| `preault_probability_electrical_fault` | Pre-fault probability for electrical fault |
+| `preault_probability_bearing_fault` | Pre-fault probability for bearing fault |
+| `preault_alert` | True if any preault probability > 0.5 |
+
+**Dual-path architecture:**
+The preault model operates as Path 1 (early warning), while the classical/fusion pipeline operates as Path 2 (active fault detection):
+
+```
+Path 1: PRE-FAULT (early warning)
+  stat_features → HistGradientBoosting × 8 → preault_alert (fires BEFORE fault)
+                    ↓
+Path 2: ACTIVE FAULT DETECTION
+  stat_features → IsolationForest + PCA + BiLSTM → Fusion MLP → fault labels
+                  classical ML baseline ↗
+```
+
+**Performance:** Preault alert fires ~185s (3.1 min) BEFORE the anomaly detector, and ~140s (2.3 min) BEFORE the first active fault detection — providing genuine predictive early warning.
+
+---
+
 ## Bundle Structure (`apet_bundle.pkl`)
 
 The trained bundle contains:
@@ -453,6 +521,7 @@ The trained bundle contains:
 | `fusion` | FaultFusionMLP | Trained fault classification MLP |
 | `quantile` | QuantileMLP | Trained RUL quantile regression MLP |
 | `health` | HealthMLP | Trained health index regression MLP |
+| `preault_gbm` | list[HistGradientBoostingClassifier] | 8 pre-fault early-warning models |
 | `seq_features` | list[str] | 35 feature names for sequence input |
 | `seq_scaler` | StandardScaler | Scaler for sequence features |
 | `stat_scaler` | StandardScaler | Scaler for stat features |
@@ -518,6 +587,15 @@ Each row in `op.csv` corresponds to one 10-second window and contains:
 | `fault_probability_overheating` | Overheating probability |
 | `fault_probability_electrical_fault` | Electrical fault probability |
 | `fault_probability_bearing_fault` | Bearing fault probability |
+| `preault_probability_misfire` | Pre-fault early warning: misfire |
+| `preault_probability_injector_degradation` | Pre-fault early warning: injector degradation |
+| `preault_probability_turbo_issue` | Pre-fault early warning: turbo issue |
+| `preault_probability_lubrication_issue` | Pre-fault early warning: lubrication issue |
+| `preault_probability_sensor_drift` | Pre-fault early warning: sensor drift |
+| `preault_probability_overheating` | Pre-fault early warning: overheating |
+| `preault_probability_electrical_fault` | Pre-fault early warning: electrical fault |
+| `preault_probability_bearing_fault` | Pre-fault early warning: bearing fault |
+| `preault_alert` | True if any preault probability > 0.5 |
 | `rul_lower_h` | RUL lower bound (hours) |
 | `rul_median_h` | RUL median estimate (hours) |
 | `rul_upper_h` | RUL upper bound (hours) |
