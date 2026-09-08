@@ -271,6 +271,26 @@ def fit_classical(stats_train: np.ndarray, y_train: np.ndarray) -> Dict:
 def classical_predict(model, stats: np.ndarray) -> np.ndarray:
     return packed_proba(model, stats)
 
+# Fit Pre-Fault Gbm
+def fit_preault_gbm(stats_train: np.ndarray, y_train: np.ndarray) -> Dict:
+    models = []
+    for i in range(y_train.shape[1]):
+        base = HistGradientBoostingClassifier(
+            max_iter=C.HIST_GBM_MAX_ITER,
+            learning_rate=C.HIST_GBM_LEARNING_RATE,
+            max_depth=C.HIST_GBM_MAX_DEPTH,
+            class_weight="balanced",
+            random_state=C.FAULT_RNG_SEED)
+        base.fit(stats_train, y_train[:, i])
+        models.append(base)
+    return {"model": models}
+
+# Pre-Fault Gbm Predict
+def preault_gbm_predict(model, stats: np.ndarray) -> np.ndarray:
+    probs = np.column_stack([m.predict_proba(stats)[:, 1] if m.classes_.shape[0] > 1
+                              else np.zeros(len(stats)) for m in model])
+    return probs
+
 # Fit Tabular
 def _fit_tabular(model: nn.Module, Xt: np.ndarray, yt: np.ndarray,
                  Xv: np.ndarray, yv: np.ndarray, loss_fn, name: str) -> Dict:

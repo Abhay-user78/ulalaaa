@@ -117,6 +117,21 @@ WEIGHT_DECAY = 1e-5
 CLASSICAL_ESTIMATORS = 200
 RUL_MAX_TARGET_H = 50.0
 
+# Pre-fault prediction
+TREND_WINDOW_S = 60
+TREND_SENSOR_SIGNALS = [
+    "egt_cyl_avg_C", "cht_cyl_avg_C", "oil_pressure_kPa", "oil_temp_C",
+    "boost_pressure_kPa", "vib_rms_g", "vib_1x_rms", "fuel_flow_g_s",
+    "battery_voltage_V", "coolant_temp_C", "rail_pressure_bar",
+    "boost_residual_kPa",
+]
+TREND_STATS = ["slope", "rate_of_change", "acceleration", "deviation"]
+PREFAULT_LOOKAHEAD_S = 180
+PREFAULT_THRESHOLD = 0.5
+HIST_GBM_MAX_ITER = 100
+HIST_GBM_LEARNING_RATE = 0.15
+HIST_GBM_MAX_DEPTH = 5
+
 LIMITS = {
     "normal": int(os.getenv("APET_NORMAL", "120")),
     "faulty": int(os.getenv("APET_FAULTY", "600")),

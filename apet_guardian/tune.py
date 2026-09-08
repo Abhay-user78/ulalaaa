@@ -42,7 +42,7 @@ def _matrices(bundle, pl, split):
     mt_f = pl._load("faulty", split, meta=True)["meta"]
     st = bundle["stat_scaler"].transform(np.vstack([st_n, st_f])).astype("float32")
     y = np.vstack([np.zeros((len(st_n), len(C.FAULTS)), dtype="float32"),
-                   mt_f[:, -len(C.FAULTS):].astype("float32")])
+                   mt_f[:, -2 * len(C.FAULTS):-len(C.FAULTS)].astype("float32")])
     seq_n = pl._load("normal", split, seq=True)["seq"]
     seq_f = pl._load("faulty", split, seq=True)["seq"]
     sq = np.concatenate([seq_n, seq_f])

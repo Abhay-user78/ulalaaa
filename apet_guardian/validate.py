@@ -63,7 +63,7 @@ def run(use_gate: bool):
     st_scaler, seq_scaler = art["stat_scaler"], art["seq_scaler"]
     st_te = st_scaler.transform(np.vstack([st_n_te, st_f_te])).astype("float32")
     y_te = np.vstack([np.zeros((len(st_n_te), len(C.FAULTS)), dtype="float32"),
-                      meta_f_te[:, -len(C.FAULTS):].astype("float32")])
+                      meta_f_te[:, -2 * len(C.FAULTS):-len(C.FAULTS)].astype("float32")])
     fault_any = y_te.sum(axis=1) > 0
 
     seq_te = np.concatenate([seq_n_te, seq_f_te])

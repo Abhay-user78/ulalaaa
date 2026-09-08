@@ -76,7 +76,7 @@ class Pipeline:
             d.mkdir(parents=True, exist_ok=True)
         self.limits = limits or dict(C.LIMITS)
         self.n_stats_cols = 8 * len(C.STATS_SIGNALS) + len(C.CUMULATIVE_FEATURES)
-        self.n_meta_cols = 3 + 1 + 1 + 1 + 1 + len(C.FAULTS)
+        self.n_meta_cols = 3 + 1 + 1 + 1 + 1 + len(C.FAULTS) + len(C.FAULTS)
         self._assign: Dict[str, Dict[str, str]] = {}
         self._store_counter = {}
 
@@ -171,6 +171,21 @@ class Pipeline:
             if fc in df.columns:
                 fault_flags[:, i] = df[fc].to_numpy(dtype="float32")[row_end]
 
+        look_ahead_rows = int(C.PREFAULT_LOOKAHEAD_S / C.SAMPLE_DT)
+        preault_labels = np.zeros((len(seq_w), len(C.FAULTS)), dtype="float32")
+        for i, fc in enumerate(C.FAULT_COLUMNS):
+            if fc not in df.columns:
+                continue
+            fault_vec = df[fc].to_numpy(dtype="float64")
+            fault_times = np.where(fault_vec > 0.5)[0]
+            if len(fault_times) == 0:
+                continue
+            first_fault_row = fault_times[0]
+            end_times = row_end.astype("int64")
+            for k in range(len(seq_w)):
+                if end_times[k] < first_fault_row and (first_fault_row - end_times[k]) <= look_ahead_rows:
+                    preault_labels[k, i] = 1.0
+
         rul_h = df["simulated_rul_hours"].to_numpy(dtype="float32")[row_end] \
             if "simulated_rul_hours" in df.columns else np.full(len(seq_w), -1.0, dtype="float32")
         health = df["true_overall_health_index"].to_numpy(dtype="float32")[row_end] \
@@ -180,7 +195,8 @@ class Pipeline:
         num = np.concatenate([
             start_t[:, None], end_t[:, None], phase_ids[:, None],
             rul_h[:, None], health[:, None], any_fault[:, None],
-            fault_flags.sum(axis=1, keepdims=True), fault_flags], axis=1).astype("float32")
+            fault_flags.sum(axis=1, keepdims=True), fault_flags,
+            preault_labels], axis=1).astype("float32")
 
         engines = df["engine_id"].to_numpy(dtype=object)
         missions = df["mission_id"].to_numpy(dtype=object)
@@ -262,7 +278,8 @@ class Pipeline:
         meta_n_tr = self._load("normal", "train", meta=True)["meta"]
         meta_f_tr = self._load("faulty", "train", meta=True)["meta"]
         seq_f_tr = self._load("faulty", "train", seq=True)["seq"]
-        y_f_mat = meta_f_tr[:, -len(C.FAULTS):]
+        y_f_mat = meta_f_tr[:, -2 * len(C.FAULTS):-len(C.FAULTS)]
+        preault_y_f = meta_f_tr[:, -len(C.FAULTS):]
         rng = np.random.default_rng(C.FAULT_RNG_SEED)
         cap_n = min(len(seq_n_tr), 40000)
         cap_f = min(len(seq_f_tr), 80000)
@@ -289,7 +306,7 @@ class Pipeline:
         y_bin_vl = np.concatenate([np.zeros(kv_n), np.clip(meta_f_vl[:kv_f, 6], 0, 1)])
         st_bin_vl = np.vstack([st_n_vl[:kv_n], st_f_vl[:kv_f]])
         y_bin_vl_mat = np.vstack([np.zeros((kv_n, len(C.FAULTS))),
-                                  meta_f_vl[:kv_f, -len(C.FAULTS):]])
+                                  meta_f_vl[:kv_f, -2 * len(C.FAULTS):-len(C.FAULTS)]])
 
         seq_tr_n = seq_scaler.transform(seq_bin_tr.reshape(-1, seq_bin_tr.shape[-1])).reshape(*seq_bin_tr.shape)
         seq_vl_n = seq_scaler.transform(seq_bin_vl.reshape(-1, seq_bin_vl.shape[-1])).reshape(*seq_bin_vl.shape)
@@ -307,6 +324,11 @@ class Pipeline:
         log.info("classical multi-label on %d train windows", len(st_bin_tr))
         classical = T.fit_classical(stat_scaler.transform(st_bin_tr), y_bin_mat)
         art["classical"] = classical["model"]
+
+        log.info("pre-fault hist-gbm on %d train windows", len(st_bin_tr))
+        preault_y_mat = np.vstack([np.zeros((cap_n, len(C.FAULTS))), preault_y_f[ix_f]])
+        preault = T.fit_preault_gbm(stat_scaler.transform(st_bin_tr), preault_y_mat)
+        art["preault_gbm"] = preault["model"]
 
         score_tr = T.anomaly_score(if_model, stat_scaler.transform(st_bin_tr), if_ref)
         score_vl = T.anomaly_score(if_model, stat_scaler.transform(st_bin_vl), if_ref)
@@ -394,7 +416,7 @@ class Pipeline:
         res["bilstm_test"] = T.evaluate_binary(label_any, prob_bin)
 
         y_mat = np.vstack([np.zeros((len(st_n_te), len(C.FAULTS))),
-                           meta_f_te[:, -len(C.FAULTS):]])
+                           meta_f_te[:, -2 * len(C.FAULTS):-len(C.FAULTS)]])
         res["classical_fault_test"] = T.evaluate_multilabel(
             y_mat, T.classical_predict(art["classical"], st_te_s), C.FAULTS)
         fu = T.fusion_predict(art["fusion"], st_te_s, score_te, emb_te)

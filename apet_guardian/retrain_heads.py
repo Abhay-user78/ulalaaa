@@ -61,7 +61,7 @@ def main():
     st_tr = np.vstack([st_n_tr_s, st_f_tr_s])
     emb_tr = np.vstack([emb_n_tr, emb_f_tr])
     y_tr = np.vstack([np.zeros((Nn, len(C.FAULTS)), dtype="float32"),
-                      meta_f_tr[:, -len(C.FAULTS):].astype("float32")])
+                      meta_f_tr[:, -2 * len(C.FAULTS):-len(C.FAULTS)].astype("float32")])
 
     if_model, if_ref = T.fit_isolated_forest(st_n_tr_s)
     anomaly_extra = T.fit_pca_anomaly(st_n_tr_s)
@@ -82,7 +82,7 @@ def main():
         seq_f_vl.reshape(-1, seq_f_vl.shape[-1])).reshape(*seq_f_vl.shape))
     emb_vl = np.vstack([emb_n_vl, emb_f_vl])
     y_vl = np.vstack([np.zeros((len(emb_n_vl), len(C.FAULTS)), dtype="float32"),
-                      meta_f_vl[:, -len(C.FAULTS):].astype("float32")])
+                      meta_f_vl[:, -2 * len(C.FAULTS):-len(C.FAULTS)].astype("float32")])
 
     score_tr = T.anomaly_score(if_model, st_tr, if_ref)
     score_vl = T.anomaly_score(if_model, st_vl, if_ref)
@@ -116,7 +116,7 @@ def main():
     st_te = np.vstack([st_scaler.transform(st_n_te).astype("float32"),
                        st_scaler.transform(st_f_te).astype("float32")])
     y_te = np.vstack([np.zeros((len(st_n_te), len(C.FAULTS)), dtype="float32"),
-                      meta_f_te[:, -len(C.FAULTS):].astype("float32")])
+                      meta_f_te[:, -2 * len(C.FAULTS):-len(C.FAULTS)].astype("float32")])
     active_any = y_te.sum(axis=1) > 0
     label_any = np.concatenate([np.zeros(len(st_n_te)),
                                 np.clip(meta_f_te[:, 6], 0, 1)])

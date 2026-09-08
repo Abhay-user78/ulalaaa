@@ -1,0 +1,155 @@
+{
+  "if_state": {
+    "healthy_train_windows": 33649,
+    "ref_p1": 3.2437973748050686e-17,
+    "ref_median": 0.11379757339484947
+  },
+  "bilstm_val": {
+    "binary_auc_roc": 0.9963884251852883,
+    "binary_accuracy": 0.98675,
+    "binary_f1": 0.9808110065170167,
+    "binary_precision": 0.984375
+  },
+  "bilstm_train_val_loss": 0.05544659474492073,
+  "fusion_train_val_loss": 0.35778192138671877,
+  "rul_val": {
+    "mae": 1.2363229848320447,
+    "rmse": 1.4632866008148915,
+    "r2": 0.7206029865183157,
+    "picp": 0.4332414962382113,
+    "mean_interval_width_h": 2.2802611067520053
+  },
+  "health_val": {
+    "mae": 1.148151333837094,
+    "rmse": 1.47043761120649,
+    "r2": 0.9929764017421325
+  },
+  "test": {
+    "anomaly_vs_injected_faults": {
+      "anomaly_auc_roc": 0.6388311006911891,
+      "anomaly_auc_pr": 0.6408741615990168,
+      "anomaly_precision_at_thresholds": [
+        0.5675493175131433,
+        0.5850549962171914,
+        0.5960559796437659,
+        0.6666666666666666,
+        0.7834497581945191,
+        0.0
+      ],
+      "anomaly_recall_at_thresholds": [
+        0.7909524769778853,
+        0.6757410768300061,
+        0.5668481548699335,
+        0.3368958795456073,
+        0.19600725952813067,
+        0.0
+      ]
+    },
+    "anomaly_versus_barely_active": {
+      "anomaly_auc_roc": 0.6388311006911891,
+      "anomaly_auc_pr": 0.6408741615990168,
+      "anomaly_precision_at_thresholds": [
+        0.5675493175131433,
+        0.5850549962171914,
+        0.5960559796437659,
+        0.6666666666666666,
+        0.7834497581945191,
+        0.0
+      ],
+      "anomaly_recall_at_thresholds": [
+        0.7909524769778853,
+        0.6757410768300061,
+        0.5668481548699335,
+        0.3368958795456073,
+        0.19600725952813067,
+        0.0
+      ]
+    },
+    "anomaly_versus_barely_active_blended": {
+      "anomaly_auc_roc": 0.9759756337614874,
+      "anomaly_auc_pr": 0.9768056299067571,
+      "anomaly_precision_at_thresholds": [
+        0.50057200538358,
+        0.6320867998970752,
+        0.7086102352655833,
+        0.9672890827313616,
+        0.988605792055705,
+        0.0
+      ],
+      "anomaly_recall_at_thresholds": [
+        1.0,
+        0.9907239362774753,
+        0.981918397526383,
+        0.9540902063588089,
+        0.4199099280768972,
+        0.0
+      ]
+    },
+    "bilstm_test": {
+      "binary_auc_roc": 0.9899339510211586,
+      "binary_accuracy": 0.959993270524899,
+      "binary_f1": 0.9600080723823619,
+      "binary_precision": 0.960751312777703
+    },
+    "classical_fault_test": {
+      "per_label_auc": {
+        "misfire": 0.9920415998131001,
+        "injector_degradation": 0.9544049105039838,
+        "turbo_issue": 0.9483917857613204,
+        "lubrication_issue": 0.9933757073348758,
+        "sensor_drift": 0.8962838925138379,
+        "overheating": 0.9130630913061272,
+        "electrical_fault": 0.9984188918358057,
+        "bearing_fault": 0.7530271533890182,
+        "macro_avg": 0.9311258790572587
+      },
+      "macro_auc": 0.9311258790572587,
+      "exact_match": 0.7363728129205922,
+      "hamming_loss": 0.03432452893674293,
+      "macro_f1": 0.6254928044331791,
+      "micro_f1": 0.6802742409402547
+    },
+    "fusion_fault_test": {
+      "per_label_auc": {
+        "misfire": 0.98343990972208,
+        "injector_degradation": 0.946126094326137,
+        "turbo_issue": 0.9713194677075166,
+        "lubrication_issue": 0.9948135290851976,
+        "sensor_drift": 0.9427665935828056,
+        "overheating": 0.9690160544690996,
+        "electrical_fault": 0.9970123874595078,
+        "bearing_fault": 0.9478777952302871,
+        "macro_avg": 0.9690464789478289
+      },
+      "macro_auc": 0.9690464789478289,
+      "exact_match": 0.6417227456258412,
+      "hamming_loss": 0.07539535666218035,
+      "macro_f1": 0.6622528212240264,
+      "micro_f1": 0.6234666442614687
+    },
+    "unknown_degradation_anomaly": {
+      "test_life_windows": 19345,
+      "near_eol_median_anomaly": 1.0000000132454767,
+      "all_life_median_anomaly": 0.8254913652715181
+    },
+    "rul_test": {
+      "mae": 1.4316228426163513,
+      "rmse": 1.7884198464275947,
+      "r2": 0.5556376030685097,
+      "picp": 0.48948048591367277,
+      "mean_interval_width_h": 2.5027537803833115
+    },
+    "health_test": {
+      "mae": 1.5332388606974863,
+      "rmse": 2.039329768915871,
+      "r2": 0.9879452668658958
+    }
+  },
+  "history": {
+    "lstm_val_loss": 0.05544659474492073,
+    "fusion_val_loss": 0.35778192138671877,
+    "classical_algo": "RandomForest MultiOutputClassifier",
+    "quantile_algo": "MLP pinball (0.10/0.50/0.90)",
+    "health_algo": "MLP MSE"
+  }
+}

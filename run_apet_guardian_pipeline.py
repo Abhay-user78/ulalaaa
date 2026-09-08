@@ -24,6 +24,7 @@ LIVE_STATE_RESET_TILES = 12
 
 ANOMALY_ALERT_THRESHOLD = 0.5
 MULTILABEL_THRESHOLD = 0.5
+PREFAULT_THRESHOLD = C.PREFAULT_THRESHOLD
 PER_CLASS_THRESHOLD = {
     "misfire": 0.860,
     "injector_degradation": 0.810,
@@ -372,6 +373,8 @@ def inference_rows(art, df, mission_warnings):
         score = T.blended_anomaly(if_model, if_ref, art.get("anomaly_extra"), stats_s, prob_bin)
         multilabel = T.fusion_predict(fusion, stats_s, score_if, emb)
 
+        preault_probs = T.preault_gbm_predict(art.get("preault_gbm"), stats_s) if art.get("preault_gbm") is not None else None
+
         rul_lo, rul_mid, rul_hi = T.quantile_predict(quantile, stats_s).T
         health_idx = T.health_predict(health, stats_s)
 
@@ -413,6 +416,11 @@ def inference_rows(art, df, mission_warnings):
                 rul_lower_hours=(None if not np.isfinite(rul_lo[k]) else float(rul_lo[k])),
                 rul_upper_hours=(None if not np.isfinite(rul_hi[k]) else float(rul_hi[k])),
                 health_index=(None if not np.isfinite(health_idx[k]) else float(health_idx[k])),
+                **({f"preault_probability_{name}": float(preault_probs[k, j])
+                    for j, name in enumerate(faults)}
+                   if preault_probs is not None else {}),
+                preault_alert=bool(
+                    preault_probs is not None and max(preault_probs[k]) > PREFAULT_THRESHOLD),
                 data_quality_warning="; ".join(sorted(warns)) if warns else "ok",
                 gt_anomaly=(None if gt_any is None else bool(gt_any[k])),
                 gt_faults="; ".join(faults[j] for j in range(len(faults))
